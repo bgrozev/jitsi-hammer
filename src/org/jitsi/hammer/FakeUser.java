@@ -15,6 +15,7 @@
  */
 package org.jitsi.hammer;
 
+import org.jitsi.impl.neomedia.transform.dtls.*;
 import org.jivesoftware.smack.*;
 import org.jivesoftware.smack.bosh.*;
 import org.jivesoftware.smack.packet.*;
@@ -89,6 +90,7 @@ public class FakeUser implements PacketListener
      * MUC chatroom
      */
     private String nickname;
+    private final DtlsControl dtlsControl = new DtlsControlImpl();
 
 
     /**
@@ -248,7 +250,7 @@ public class FakeUser implements PacketListener
          * Creation in advance of the MediaStream that will be used later
          * so the HammerStats can register their MediaStreamStats now.
          */
-        mediaStreamMap = HammerUtils.createMediaStreams();
+        mediaStreamMap = HammerUtils.createMediaStreams(dtlsControl);
         if (fakeUserStats != null)
         {
             fakeUserStats.setMediaStreamStats(
@@ -719,7 +721,7 @@ public class FakeUser implements PacketListener
             //Set the remote fingerprint on my streams and add the fingerprints
             //of my streams to the content list of the session-accept
             HammerUtils.setDtlsEncryptionOnTransport(
-                mediaStreamMap,
+                dtlsControl,
                 sessionAccept.getContentList(),
                 sessionInitiate.getContentList());
 
