@@ -136,6 +136,8 @@ public class FakeUser implements PacketListener
      */
     private Agent agent = new Agent();
 
+    private IceMediaStream iceStream;
+
     /**
      * The <tt>FakeUserStats</tt> that represents the stats of the streams of
      * this <tt>FakeUser</tt>
@@ -620,22 +622,24 @@ public class FakeUser implements PacketListener
         
         
 
-        iceMediaStreamGenerator = IceMediaStreamGenerator.getInstance();
-        
-        try
+        if (iceStream == null)
         {
-            iceMediaStreamGenerator.generateIceMediaStream(
-                agent,
-                contentMap.keySet(),
-                null,
-                null);
-        }
-        catch (IOException e)
-        {
-            logger.fatal(this.nickname + " : Error during the generation"
-                + " of the IceMediaStream",e);
-        }
-        
+            iceMediaStreamGenerator = IceMediaStreamGenerator.getInstance();
+
+            try
+            {
+                iceStream = iceMediaStreamGenerator.generateIceMediaStream(
+                    agent,
+                    contentMap.keySet(),
+                    null,
+                    null);
+            }
+            catch (IOException e)
+            {
+                logger.fatal(this.nickname + " : Error during the generation"
+                                 + " of the IceMediaStream", e);
+            }
+
         //Add the remote candidate to my agent, and add my local candidate of
         //my stream to the content list of the future session-accept
         HammerUtils.addRemoteCandidateToAgent(
@@ -645,6 +649,7 @@ public class FakeUser implements PacketListener
             agent,
             contentMap.values());
 
+        }
 
 
 

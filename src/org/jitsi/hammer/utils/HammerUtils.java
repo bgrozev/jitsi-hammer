@@ -51,6 +51,15 @@ public class HammerUtils
     private static final Logger logger
         = Logger.getLogger(HammerUtils.class);
 
+    private static DatagramPacketFilter filterAll = new DatagramPacketFilter()
+    {
+        @Override
+        public boolean accept(DatagramPacket datagramPacket)
+        {
+            return false;
+        }
+    };
+
     /**
      * Select the favorite <tt>MediaFormat</tt> of a list of <tt>MediaFormat</tt>
      *
@@ -410,60 +419,44 @@ public class HammerUtils
         Map<String,MediaStream> mediaStreamMap,
         boolean dropIncomingRtpPackets)
     {
-        IceMediaStream iceMediaStream = null;
-        CandidatePair rtpPair = null;
-        CandidatePair rtcpPair = null;
-        DatagramSocket rtpSocket = null;
-        DatagramSocket rtcpSocket = null;
-
+        CandidatePair pair;
         StreamConnector connector = null;
-        MediaStream stream = null;
 
-        String str = "Transport candidates selected for RTP:\n";
-        for(String mediaName : agent.getStreamNames())
+        try
         {
-            iceMediaStream = agent.getStream(mediaName);
-            stream = mediaStreamMap.get(mediaName);
-
-            rtpPair = iceMediaStream.getComponent(Component.RTP)
-                .getSelectedPair();
-            rtcpPair = iceMediaStream.getComponent(Component.RTCP)
-                .getSelectedPair();
-
-            str = str + "-" + mediaName + " stream :\n" + rtpPair + "\n";
-
-            rtpSocket = rtpPair.getIceSocketWrapper().getUDPSocket();
-
-            if (dropIncomingRtpPackets &&
-                    rtpSocket instanceof MultiplexingDatagramSocket)
+            pair = agent.getStream("stream").getComponent(Component.RTP).getSelectedPair();
+            boolean first = true;
+            for (MediaStream ms : mediaStreamMap.values())
             {
-                try
+                MultiplexingDatagramSocket ming = agent.getStream("stream")
+                    .getComponent(Component.RTP).getSocket();
+                if (dropIncomingRtpPackets)
                 {
-                    // We are not going to handle any incoming RTP packets
-                    // anyway, so we might as well drop them early and not
-                    // waste resources processing them further.
-                    // This sets up a filtered socket, which receives only
-                    // DTLS packets.
-                    rtpSocket
-                        = ((MultiplexingDatagramSocket) rtpSocket)
-                            .getSocket(new DTLSDatagramFilter());
+                    connector = new DefaultStreamConnector(
+                        ming.getSocket(
+                            first ? new DTLSDatagramFilter() : filterAll),
+                        null, true);
                 }
-                catch (SocketException se)
+                else
                 {
-                    // Whatever, this is just an optimization, anyway.
+                    logger.warn("fail...no drop incoming packets...");
                 }
-            }
-            rtcpSocket = rtcpPair.getIceSocketWrapper().getUDPSocket();
 
-            connector = new DefaultStreamConnector(rtpSocket, rtcpSocket);
-            stream.setConnector(connector);
+                first = false; //The first stream gets DTLS only, the other stream gets no packets
 
-            stream.setTarget(
+            ms.setConnector(connector);
+
+            ms.setTarget(
                 new MediaStreamTarget(
-                    rtpPair.getRemoteCandidate().getTransportAddress(),
-                    rtcpPair.getRemoteCandidate().getTransportAddress()) );
+                    pair.getRemoteCandidate().getTransportAddress(),
+                    pair.getRemoteCandidate().getTransportAddress()) );
+
+            }
         }
-        logger.info(str);
+        catch (SocketException se)
+        {
+            logger.warn("failed to make sockets for the streams "+se);
+        }
     }
 
 

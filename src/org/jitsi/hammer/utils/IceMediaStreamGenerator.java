@@ -110,7 +110,7 @@ public class IceMediaStreamGenerator
      * @throws IOException if anything goes wrong when the <tt>Component<tt>
      * are created.
      */
-    public void generateIceMediaStream (
+    public IceMediaStream generateIceMediaStream (
             Agent agent,
             Set<String> mediaNameSet,
             TransportAddress stunAddresses[],
@@ -143,14 +143,14 @@ public class IceMediaStreamGenerator
 
         synchronized(this)
         {
-            for(String name : mediaNameSet)
-            {
+            //for(String name : mediaNameSet)
+            //{
                 //FIXME if the stream is a data one, we don't create an IceMediaStream
                 //(normally the data content should have been remove from the Set
                 //But better safe than sorry
-                if(name.equalsIgnoreCase("data")) continue;
+              //  if(name.equalsIgnoreCase("data")) continue;
 
-                stream = agent.createMediaStream(name);
+                stream = agent.createMediaStream("stream");
 
                 if( (CURRENT_COMPONENT_PORT + 1) >= MAX_COMPONENT_PORT )
                     CURRENT_COMPONENT_PORT = MIN_COMPONENT_PORT;
@@ -162,16 +162,19 @@ public class IceMediaStreamGenerator
                         CURRENT_COMPONENT_PORT,
                         CURRENT_COMPONENT_PORT + 50);
 
+            /*
                 agent.createComponent(
                         stream,
                         Transport.UDP,
                         CURRENT_COMPONENT_PORT+1,
                         CURRENT_COMPONENT_PORT+1,
                         CURRENT_COMPONENT_PORT + 50);
+                        */
 
                 CURRENT_COMPONENT_PORT+=50;
-            }
+            //}
         }
+        return stream;
     }
 
 }
