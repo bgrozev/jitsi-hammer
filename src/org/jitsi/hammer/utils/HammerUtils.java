@@ -147,8 +147,7 @@ public class HammerUtils
 
         for(ContentPacketExtension content : contentList)
         {
-            contentName = content.getName();
-            stream = agent.getStream(contentName);
+            stream = agent.getStream("stream");
             if(stream == null) continue;
 
             transports = content.getFirstChildOfType(IceUdpTransportPacketExtension.class);
@@ -200,6 +199,7 @@ public class HammerUtils
                     }
                 }
             }
+            break; // bundle
         }
     }
 
@@ -228,7 +228,7 @@ public class HammerUtils
         {
             transport = new IceUdpTransportPacketExtension();
 
-            iceMediaStream = agent.getStream(content.getName());
+            iceMediaStream = agent.getStream("stream");
 
             transport.setPassword( agent.getLocalPassword() );
             transport.setUfrag( agent.getLocalUfrag() );
