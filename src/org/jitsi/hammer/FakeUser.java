@@ -268,6 +268,9 @@ public class FakeUser implements PacketListener
         discoManager.addFeature(RTPHdrExtPacketExtension.NAMESPACE);
         discoManager.addFeature("urn:xmpp:jingle:apps:rtp:audio");
         discoManager.addFeature("urn:xmpp:jingle:apps:rtp:video");
+        discoManager.addFeature("urn:ietf:rfc:5761"); //rtcp-mux
+        discoManager.addFeature("urn:ietf:rfc:5888"); //bundle
+
 
         /** added to address bosh timeout issues causing early terminatin of the hammer **/
         org.jivesoftware.smackx.ping.PingManager.getInstanceFor(connection).setPingInterval(15);
