@@ -251,6 +251,7 @@ public class FakeUser implements PacketListener
          * so the HammerStats can register their MediaStreamStats now.
          */
         mediaStreamMap = HammerUtils.createMediaStreams(dtlsControl);
+        dtlsControl.start(MediaType.AUDIO);
         if (fakeUserStats != null)
         {
             fakeUserStats.setMediaStreamStats(
